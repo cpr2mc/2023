@@ -1,3 +1,5 @@
+# this is all built in conjuction with chatGPT
+
 from googleapiclient.discovery import build
 from auth import create_credentials
 
