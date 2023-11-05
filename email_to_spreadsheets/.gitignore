@@ -1,8 +1,8 @@
 venv/
 __pycache__/
 *.pyc
-/Users/christopherroos/2023_initiative/2023/email_to_spreadsheets/client_secret_681304695347-f952ciurq84h6c8l6c5r2fka59jruhkm.apps.googleusercontent.com.json
-/Users/christopherroos/2023_initiative/2023/email_to_spreadsheets/app/token.pickle
+client_secret_681304695347-f952ciurq84h6c8l6c5r2fka59jruhkm.apps.googleusercontent.com.json
+./app/token.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

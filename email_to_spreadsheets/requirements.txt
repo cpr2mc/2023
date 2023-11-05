@@ -1,1 +1,12 @@
-# requirements
+openpyxl
+xlrd
+xlsxwriter
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+requests
+flask
+python-dotenv
+schedule
+pandas
