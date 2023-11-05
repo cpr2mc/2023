@@ -1,4 +1,43 @@
 venv/
 __pycache__/
 *.pyc
+/Users/christopherroos/2023_initiative/2023/email_to_spreadsheets/client_secret_681304695347-f952ciurq84h6c8l6c5r2fka59jruhkm.apps.googleusercontent.com.json
+/Users/christopherroos/2023_initiative/2023/email_to_spreadsheets/app/token.pickle
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Unit test / coverage reports
+.htmlcov/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+
+# dotenv configuration
+dotenv.env
+
+# Virtual environment
+.venv
+venv/
+ENV/
+
+# Editor directories and files
+.vscode/
+*.sublime-workspace
+
+# Credentials and sensitive information
+credentials.json
+token.pickle
+*.p12
+client_secret.json
+
+
+# Python virtualenv
+bin/
+include/
+lib/
+pyvenv.cfg
+lib64/
