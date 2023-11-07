@@ -1,4 +1,5 @@
 # this is all built in conjuction with chatGPT
+import base64
 
 from googleapiclient.discovery import build
 from auth import create_credentials
@@ -8,48 +9,76 @@ def get_gmail_service():
     service = build('gmail', 'v1', credentials=credentials)
     return service
 
-def list_messages_with_subject(service, user_id='me', subject_query='para_lead'):
-    """
-    List all messages of the user's mailbox with a subject containing the given query.
-
-    Args:
-        service: Authorized Gmail API service instance.
-        user_id: User's email address. The special value "me"
-                 can be used to indicate the authenticated user.
-        subject_query: String to search in the subject line of the emails.
-
-    Returns:
-        List of messages that meet the criteria of the query. 
-        Note that the returned list contains message IDs and thread IDs.
-    """
+def get_message(service, user_id, msg_id):
     try:
-        query = f'subject:{subject_query}'
+        message = service.users().messages().get(userId=user_id, id=msg_id, format='full').execute()
+        return message
+    except Exception as error:
+        print(f'An error occurred: {error}')
+        return None
+
+def list_messages_matching_query(service, user_id, query=''):
+    try:
         response = service.users().messages().list(userId=user_id, q=query).execute()
-        messages = response.get('messages', [])
+        messages = []
+        if 'messages' in response:
+            messages.extend(response['messages'])
 
         while 'nextPageToken' in response:
             page_token = response['nextPageToken']
-            response = service.users().messages().list(userId=user_id, q=query,
-                                                       pageToken=page_token).execute()
-            messages.extend(response.get('messages', []))
+            response = service.users().messages().list(userId=user_id, q=query, pageToken=page_token).execute()
+            messages.extend(response['messages'])
 
         return messages
     except Exception as error:
         print(f'An error occurred: {error}')
         return None
 
-def get_message(service, user_id, message_id):
-    # Call the Gmail API to fetch a specific message
-    pass
+def display_emails_containing_para_lead():
+    # Get credentials and create a service
+    credentials = create_credentials()
+    service = build('gmail', 'v1', credentials=credentials)
+
+    # List all messages with 'para_lead' in the subject
+    messages = list_messages_matching_query(service, 'me', query='subject:para_lead')
+
+    if not messages:
+        print('No messages found.')
+    else:
+        print(f'Found {len(messages)} messages:')
+        for message in messages:
+            msg = get_message(service, 'me', message['id'])
+
+            # Get subject from the message
+            headers = msg['payload']['headers']
+            subject = next((header['value'] for header in headers if header['name'] == 'Subject'), None)
+            print(f'Subject: {subject}')
+
+            # Get and decode the email body from the message payload
+            parts = msg['payload'].get('parts', [])
+            for part in parts:
+                # Check if the part contains 'text/plain' or 'text/html'
+                if part['mimeType'] == 'text/plain' or part['mimeType'] == 'text/html':
+                    body_data = part['body']['data']
+                    body = base64.urlsafe_b64decode(body_data).decode('utf-8')
+                    print(f'Body: {body}\n')
+                elif part.get('parts'):  # Nested parts, could be a multipart/alternative
+                    # Go through each part in the nested parts
+                    for subpart in part['parts']:
+                        if subpart['mimeType'] == 'text/plain' or subpart['mimeType'] == 'text/html':
+                            body_data = subpart['body']['data']
+                            body = base64.urlsafe_b64decode(body_data).decode('utf-8')
+                            print(f'Body: {body}\n')
+
+# Example of calling the display_emails_containing_para_lead function:
+if __name__ == '__main__':
+    display_emails_containing_para_lead()
+
+
+# Call the function to display the emails
+display_emails_containing_para_lead()
 
 def parse_message(message):
     # Extract the relevant information from the message
     pass
 
-# Example of calling the list_messages_with_subject function:
-if __name__ == '__main__':
-    service = get_gmail_service()
-    messages = list_messages_with_subject(service, subject_query='para_lead')
-    print(f"Total messages with 'para_lead' in subject: {len(messages)}")
-    for message in messages:
-        print(f"Message ID: {message['id']}")
