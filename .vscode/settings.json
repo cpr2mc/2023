@@ -1,3 +1,3 @@
 {
-    "python.pythonPath": "../email_to_spreadsheets/venv/bin/python"
+    "python.defaultInterpreterPath": "/Users/christopherroos/2023_initiative/2023/email_to_spreadsheets/venv/bin/python"
 }

@@ -4,6 +4,8 @@ import base64
 from googleapiclient.discovery import build
 from auth import create_credentials
 
+from email_parser import parse_email_body
+
 def get_gmail_service():
     credentials = create_credentials()
     service = build('gmail', 'v1', credentials=credentials)
@@ -48,27 +50,16 @@ def display_emails_containing_para_lead():
         print(f'Found {len(messages)} messages:')
         for message in messages:
             msg = get_message(service, 'me', message['id'])
-
             # Get subject from the message
             headers = msg['payload']['headers']
             subject = next((header['value'] for header in headers if header['name'] == 'Subject'), None)
             print(f'Subject: {subject}')
 
-            # Get and decode the email body from the message payload
-            parts = msg['payload'].get('parts', [])
-            for part in parts:
-                # Check if the part contains 'text/plain' or 'text/html'
-                if part['mimeType'] == 'text/plain' or part['mimeType'] == 'text/html':
-                    body_data = part['body']['data']
-                    body = base64.urlsafe_b64decode(body_data).decode('utf-8')
-                    print(f'Body: {body}\n')
-                elif part.get('parts'):  # Nested parts, could be a multipart/alternative
-                    # Go through each part in the nested parts
-                    for subpart in part['parts']:
-                        if subpart['mimeType'] == 'text/plain' or subpart['mimeType'] == 'text/html':
-                            body_data = subpart['body']['data']
-                            body = base64.urlsafe_b64decode(body_data).decode('utf-8')
-                            print(f'Body: {body}\n')
+            # Pass the message payload to parse_email_body function
+            payload = msg.get('payload')
+            if payload:
+                parsed_data = parse_email_body(payload)
+                print(parsed_data)
 
 # Example of calling the display_emails_containing_para_lead function:
 if __name__ == '__main__':
@@ -78,7 +69,4 @@ if __name__ == '__main__':
 # Call the function to display the emails
 display_emails_containing_para_lead()
 
-def parse_message(message):
-    # Extract the relevant information from the message
-    pass
 

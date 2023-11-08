@@ -10,3 +10,4 @@ flask
 python-dotenv
 schedule
 pandas
+beautifulsoup4
