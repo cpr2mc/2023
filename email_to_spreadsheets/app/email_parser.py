@@ -28,30 +28,19 @@ def get_plain_text_from_html(html_content):
     
     return text
 
-def parse_email_body(part):
+def parse_email_body(email_content):
     """
-    Recursive function to parse the email body and extract all text from 'text/plain' parts.
-    Convert 'text/html' parts to plain text using BeautifulSoup.
+    This function will now directly handle the email content.
+    Assumes email_content is a string that may contain both plain text and HTML.
     """
     combined_text = ""
 
-    mime_type = part.get("mimeType", "")
-    part_body = part.get("body") or {}
-    data = part_body.get("data")
-    part_parts = part.get("parts", [])
-
-    if mime_type == "text/plain" and data:
-        # Decode text/plain part and append to combined_text
-        text = base64.urlsafe_b64decode(data).decode("utf-8")
-        combined_text += text + "\n"
-    elif mime_type == "text/html" and data:
-        # Decode text/html part, convert to plain text, and append to combined_text
-        html = base64.urlsafe_b64decode(data).decode("utf-8")
-        combined_text += get_plain_text_from_html(html) + "\n"
-    elif part_parts:
-        # If the part is multipart, recurse into it
-        for subpart in part_parts:
-            combined_text += parse_email_body(subpart)
+    # Check for both plain text and HTML in the email
+    if 'text/plain' in email_content:
+        combined_text += email_content['text/plain'] + "\n"
+    if 'text/html' in email_content:
+        html_content = email_content['text/html']
+        combined_text += get_plain_text_from_html(html_content) + "\n"
 
     return combined_text
 
@@ -74,4 +63,16 @@ def extract_job_info(text):
 
     return job_listings
 
-job_info = extract_job_info(your_text_snippet)
+email_content_example = {
+    "text/plain": "Example Company\n- New York, NY\n$50,000 a year",
+    "text/html": "<html><body><p>Example HTML Content</p></body></html>"
+}
+
+# Using parse_email_body to get plain text from the email
+parsed_email_body = parse_email_body(email_content_example)
+
+# Extract job information from the parsed email body
+job_info = extract_job_info(parsed_email_body)
+
+print(job_info)
+print(parse_email_body)
