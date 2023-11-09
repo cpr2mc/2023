@@ -1,22 +1,31 @@
+import re
 from bs4 import BeautifulSoup
 import base64
+import html
 
 def get_plain_text_from_html(html_content):
     """
     Use BeautifulSoup to convert HTML content to plain text.
     """
     soup = BeautifulSoup(html_content, 'html.parser')
+    
     # Use some heuristics to remove script, style, head, title, etc.
     for script_or_style in soup(['script', 'style', 'head', 'title']):
         script_or_style.extract()
-    # Get text
+    
+    # Get text and decode HTML entities
     text = soup.get_text(separator='\n')
-    # Break into lines and remove leading and trailing space on each
+    text = html.unescape(text)
+    
+    # Regular expression to find URLs
+    url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+|[^\s<>"]+\.[^\s<>"]{2,}'
+    text = re.sub(url_pattern, '', text, flags=re.IGNORECASE)
+
+    # Further processing to clean up the text
     lines = (line.strip() for line in text.splitlines())
-    # Break multi-headlines into a line each
     chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    # Drop blank lines
     text = '\n'.join(chunk for chunk in chunks if chunk)
+    
     return text
 
 def parse_email_body(part):
@@ -45,3 +54,24 @@ def parse_email_body(part):
             combined_text += parse_email_body(subpart)
 
     return combined_text
+
+def extract_job_info(text):
+    # Regular expressions for company name, city and pay range
+    company_pattern = r'\n(.*?)\n- [A-Za-z]+, [A-Z]{2}'
+    city_pattern = r'- ([A-Za-z]+), ([A-Z]{2})'
+    pay_pattern = r'\$(\d+(?:,\d+)?(?: - \$\d+(?:,\d+)?)?) (a day|an hour|a week)'
+
+    companies = re.findall(company_pattern, text)
+    cities = re.findall(city_pattern, text)
+    pays = re.findall(pay_pattern, text)
+
+    # Combine the information
+    job_listings = []
+    for idx, company in enumerate(companies):
+        city = f"{cities[idx][0]}, {cities[idx][1]}" if idx < len(cities) else "N/A"
+        pay = " - ".join(pays[idx]) if idx < len(pays) else "N/A"
+        job_listings.append((company, city, pay))
+
+    return job_listings
+
+job_info = extract_job_info(your_text_snippet)
