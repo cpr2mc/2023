@@ -1,6 +1,8 @@
 # 2023
 2023 Initiative
 
+
+Below is the old 2023 Initiative. This is now the 2024 Initiative, I guess. I will update this lol!
 ## Month 1: Basics
 ### Week 1-2: Introduction
 Setting up your Python environment.
